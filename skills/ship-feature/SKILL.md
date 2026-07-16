@@ -9,15 +9,9 @@ disable-model-invocation: true
 
 Run a **closed loop**: discover → plan → implement → prove → review → repair. The main agent is the flight controller: it owns decisions, repository safety, evidence, PR state, and the loop. Subagents receive bounded roles; their confidence never substitutes for verification.
 
-Use these default profiles:
+Use **adaptive-balanced** routing unless the user selects another routing mode or pins profiles. Before each dispatch, apply [`MODEL-ROUTING.md`](MODEL-ROUTING.md): discover available candidates, classify the actual job, choose the cheapest/fastest sufficient model and effort, and record the decision. Routine choices and evidence-driven escalation stay autonomous within user and repository constraints.
 
-| Role | Model | Effort |
-|---|---|---|
-| Planner | GPT-5.6 Sol | Medium |
-| Implementer | GPT-5.6 Luna | High |
-| Reviewer | GPT-5.6 Sol | Medium |
-
-Treat profile names as configured model aliases. Ask the user before substituting a model, changing effort, or adding a role. A fresh reviewer is another iteration of the existing Reviewer role, not a new role. Never emulate an independent Reviewer in the main context.
+A fresh reviewer is another iteration of the existing Reviewer role, not a new role. Preserve independent review rather than emulating a Reviewer in the main context.
 
 Before dispatching a role, read the Common contract and that role's contract in [`ROLE-CONTRACTS.md`](ROLE-CONTRACTS.md); include both in the subagent prompt.
 
@@ -25,12 +19,13 @@ Before dispatching a role, read the Common contract and that role's contract in 
 
 Read the feature request, repository instructions, relevant source, tests, architecture, issue context, and delivery conventions. Preflight:
 
-- Planner, Implementer, and independent Reviewer dispatch with the configured profiles
+- harness model inventory and adaptive-routing metadata, or an approved fallback candidate set
+- Planner, Implementer, and independent Reviewer dispatch with selected profiles
 - writable Git state and exact intended base SHA
 - push remote, authentication, PR create/update access, comment access, and CI visibility
 - existing branches, worktrees, or PRs matching the issue, request, or head branch
 
-If a required capability is missing, ask the user to approve a concrete fallback or stop. Preserve reviewer independence and repository safety in every fallback.
+If a required capability is missing, ask the user to approve a concrete fallback or stop. Ask once when model discovery is unavailable; ask again only when later evidence crosses a recorded cost, latency, provider, privacy, or capability boundary. Preserve reviewer independence and repository safety in every fallback.
 
 Classify delivery state before mutation: new work, resumable owned branch/PR, conflicting or foreign work, or already satisfied with no diff. **Owned** means created in this run, or an existing PR has the same authenticated author plus a `ship-feature` marker matching the request fingerprint, branch, and recorded base. Treat every other apparent match as ambiguous and ask before mutation. Resume exactly one owned branch/PR. For already-satisfied work, prove it against the base and hand back without manufacturing a commit or PR. Ask how to isolate conflicting, detached, dirty, ambiguous, or foreign work.
 
@@ -50,7 +45,7 @@ For new work, create a convention-compliant branch from the intended base. Recor
 
 ## 2. Commission the plan
 
-Dispatch one Planner with the feature request, decision ledger, repository context, and planner contract. Require repository-grounded output rather than a generic design.
+Route and dispatch one Planner with the feature request, decision ledger, repository context, and Planner contract. Require repository-grounded output rather than a generic design.
 
 Challenge the returned plan against the codebase. Reconcile incorrect assumptions yourself; return to the user only for consequential decisions under the question gate. Keep one canonical internal plan until PR creation.
 
@@ -58,7 +53,7 @@ Challenge the returned plan against the codebase. Reconcile incorrect assumption
 
 ## 3. Commission implementation
 
-Dispatch one Implementer with the accepted plan, decision ledger, current base/head SHAs, relevant repository instructions, and Implementer contract. The Implementer may edit and test the owned branch/worktree. The main agent owns integration, commits, pushes, and PR lifecycle; transferring any authority uses the approval gate.
+Route and dispatch one Implementer with the accepted plan, decision ledger, current base/head SHAs, relevant repository instructions, and Implementer contract. The Implementer may edit and test the owned branch/worktree. The main agent owns integration, commits, pushes, and PR lifecycle; transferring any authority uses the approval gate.
 
 Inspect the resulting diff rather than trusting the report. Run focused checks throughout integration and the repository's required full validation before review. Verify generated files, migrations, lockfiles, API/schema changes, user-visible states, and operational configuration when present. Keep unrelated edits out of the branch. Observed evidence replaces planned proof in the acceptance map.
 
@@ -87,18 +82,18 @@ Record failing external checks honestly with links or output and distinguish bra
 
 ## 5. Close the review loop
 
-For each round, dispatch a fresh Reviewer with the PR URL/number, base and head SHAs, decision ledger, accepted plan, validation evidence, and reviewer contract. The reviewer must inspect the actual diff and post one clear PR review or summary comment. It must avoid duplicating still-open findings from earlier rounds.
+For each round, route and dispatch a fresh Reviewer with the PR URL/number, base and head SHAs, decision ledger, accepted plan, validation evidence, and Reviewer contract. The reviewer must inspect the actual diff and post one clear PR review or summary comment. It must avoid duplicating still-open findings from earlier rounds.
 
 Collect the posted review and CI results yourself and validate each finding under the Common contract severity taxonomy. Send blockers and accepted improvements, with comment links and current base/head SHAs, through the Implementer role. Inspect the patch, rerun affected checks plus required full validation, commit, fast-forward push, update PR evidence, and dispatch a fresh review round. Reply to or resolve comments with evidence according to repository practice.
 
 Evidence counts only for the exact base/head snapshot it evaluated. Discard stale reviews and checks after head changes; reassess material base drift before handoff. After the first complete review, accept a newly raised improvement only when it addresses code introduced since that review or is required by an acceptance criterion or repository standard; classify other late improvements as follow-ups. Retry flaky checks according to repository policy, or at most twice when no policy exists. Escalate when the same blocker survives two repair attempts, a repair round produces no relevant diff, or external checks remain pending beyond the repository's normal window.
 
-Ask the user when a finding requires a consequential decision, a profile/role exception, an explicit repository-policy waiver, or no-progress escalation. Keep progressing on independent work before raising the question whenever possible.
+Ask the user when a finding requires a consequential decision, crosses an adaptive-routing user gate, requires a role exception, needs an explicit repository-policy waiver, or triggers no-progress escalation. Keep progressing on independent work before raising the question whenever possible.
 
 **Complete when:** the latest exact-SHA Reviewer verdict has no blockers, accepted improvements are complete, every unresolved comment has a Common-contract classification, required checks for the final head pass or have a user-accepted baseline/external exception, the PR body matches the final diff, and the remote PR base/head match the verified snapshot.
 
 ## 6. Hand back control
 
-Report the branch, PR URL, final base/head SHAs, merge-readiness verdict, checks and exact results, review rounds, resolved findings, remaining follow-ups, and user-accepted exceptions. Leave merging to the user unless they explicitly granted merge authority.
+Report the branch, PR URL, final base/head SHAs, merge-readiness verdict, checks and exact results, review rounds, dispatch ledger summary with known cost/latency, resolved findings, remaining follow-ups, and user-accepted exceptions. Leave merging to the user unless they explicitly granted merge authority.
 
 **Complete when:** every report field is present and the merge-readiness verdict is explicit.
