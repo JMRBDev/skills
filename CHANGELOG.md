@@ -2,6 +2,13 @@
 
 All notable changes to the skills in this repository are documented here.
 
+## Unreleased
+
+### i-have-adhd
+
+- Added an ADHD-friendly output skill adapted for Pi and Skills CLI installations.
+- Added action-first, numbered, state-visible response guidance with concise error handling.
+
 ## 1.0.0 — 2026-07-16
 
 ### ship-feature

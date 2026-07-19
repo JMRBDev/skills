@@ -14,15 +14,33 @@ It coordinates dedicated planning, implementation, and independent review subage
 
 [Read the skill](skills/ship-feature/SKILL.md) · [Role contracts](skills/ship-feature/ROLE-CONTRACTS.md) · [skills.sh](https://skills.sh/jmrbdev/skills/ship-feature)
 
+### i-have-adhd
+
+Shapes every response around concrete next actions, numbered steps, visible state, and low-friction execution.
+
+[Read the skill](skills/i-have-adhd/SKILL.md) · [skills.sh](https://skills.sh/jmrbdev/skills/i-have-adhd)
+
 ## Install
 
-Install one skill globally:
+Install the ADHD-friendly output skill globally:
+
+```bash
+npx skills add JMRBDev/skills --skill i-have-adhd -g -y
+```
+
+Install the feature-shipping skill globally:
 
 ```bash
 npx skills add JMRBDev/skills --skill ship-feature -g -y
 ```
 
-Install one skill into the current project:
+Install the ADHD-friendly output skill into the current project:
+
+```bash
+npx skills add JMRBDev/skills --skill i-have-adhd -y
+```
+
+Install the feature-shipping skill into the current project:
 
 ```bash
 npx skills add JMRBDev/skills --skill ship-feature -y
